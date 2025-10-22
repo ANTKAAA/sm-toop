@@ -1,300 +1,453 @@
-// Supabase Configuration
-const SUPABASE_URL = 'https://your-project.supabase.co';
-const SUPABASE_ANON_KEY = 'your-anon-key';
+// script.js — نسخة مُحسّنة للعمل مع Supabase + تحسينات عامة
+// 1) يجب تحميل مكتبة supabase قبل هذا السكربت (see index.html head snippet)
 
-// Initialize Supabase client
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const SUPABASE_URL = window.SUPABASE_URL || '';
+const SUPABASE_KEY = window.SUPABASE_KEY || '';
 
-// Global variables
+if (!SUPABASE_URL || !SUPABASE_KEY) {
+    console.warn('لم يتم العثور على بيانات Supabase في window.SUPABASE_URL / window.SUPABASE_KEY. سيتم استخدام localStorage فقط.');
+}
+
+const supabaseClient = (window.supabase && SUPABASE_URL && SUPABASE_KEY)
+    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+    : null;
+
+// Global state
 let currentPropertyType = '';
 let currentBuyerPropertyType = '';
 let sellerRegistrations = [];
 let buyerRegistrations = [];
+let featuredProperties = [];
+let contractingServices = []; // سيتم تهيئته لاحقاً
+let adminUsers = [];
 let currentAdmin = null;
 let adminClickCounter = 0;
-let inquiries = [];
-let notifications = [];
-let serviceRequests = [];
-let contractingClients = [];
-let contractingServices = [
-    {
-        id: 1,
-        title: 'تصميم الشقق السكنية',
-        description: 'خدمات تصميم داخلي وخارجي للشقق السكنية بأحدث الطرق والتقنيات',
-        features: ['تصميم ثلاثي الأبعاد', 'اختيار الألوان والمواد', 'تخطيط المساحات', 'إشراف على التنفيذ'],
-        price: 'للاستعلام عن الأسعار تواصل معنا',
-        category: 'تصميم',
-        icon: '🏠',
-        active: true,
-        createdAt: new Date().toLocaleString('ar-EG')
-    },
-    {
-        id: 2,
-        title: 'تصميم المحلات التجارية',
-        description: 'تصميم وتجهيز المحلات التجارية لجذب العملاء وزيادة المبيعات',
-        features: ['تصميم الواجهة', 'تخطيط المساحة الداخلية', 'الإضاءة والديكور', 'أنظمة العرض'],
-        price: 'للاستعلام عن الأسعار تواصل معنا',
-        category: 'تصميم',
-        icon: '🏪',
-        active: true,
-        createdAt: new Date().toLocaleString('ar-EG')
-    },
-    {
-        id: 3,
-        title: 'مقاولات استلام على المفتاح',
-        description: 'مقاولات كاملة من البداية حتى الاستلام النهائي جاهز للسكن',
-        features: ['أعمال البناء الكاملة', 'التشطيبات الداخلية', 'السباكة والكهرباء', 'الدهانات والأرضيات'],
-        price: 'للاستعلام عن الأسعار تواصل معنا',
-        category: 'مقاولات',
-        icon: '🔑',
-        active: true,
-        createdAt: new Date().toLocaleString('ar-EG')
-    }
-];
-let adminUsers = [
-    {
-        id: 1,
-        username: 'admintito',
-        password: '0453328124',
-        fullName: 'المدير الرئيسي',
-        isMainAdmin: true,
-        createdAt: new Date().toLocaleString('ar-EG')
-    }
+
+// Basic demo contractingServices & admin (يمكن تعديلها أو تحميلها من DB)
+contractingServices = [
+    { id: 1, title: 'تصميم الشقق السكنية', description: 'خدمات تصميم داخلي وخارجي.', price: 'للاستعلام', icon: '🏠', active: true },
+    { id: 2, title: 'مقاولات تشطيب كاملة', description: 'تشطيب شامل من A to Z.', price: 'للاستعلام', icon: '🔨', active: true },
+    { id: 3, title: 'تصميم المحلات التجارية', description: 'تصميم واجهات وتجهيز داخلي.', price: 'للاستعلام', icon: '🏪', active: true }
 ];
 
-// Initialize the application
-document.addEventListener('DOMContentLoaded', function() {
-    initializeApp();
-});
+adminUsers = [
+    { id: 1, username: 'admin', password: '123456', fullName: 'المدير الرئيسي', isMainAdmin: true }
+];
 
-async function initializeApp() {
-    await loadDataFromSupabase();
-    showSection('home');
-    updateLocationCounts();
-    updateServicesList();
-    updateHomeServices();
-    updateContractingClients();
+// ---------------------- DOM Helpers ----------------------
+function el(id) { return document.getElementById(id); }
+function qAll(sel) { return Array.from(document.querySelectorAll(sel)); }
+
+// ---------------------- Show / Hide Sections ----------------------
+function showSection(section) {
+    // إخفاء كل الأقسام
+    qAll('.form-section').forEach(s => {
+        s.classList.remove('active');
+        s.style.display = 'none';
+    });
+
+    // home-section يُعرض ببلوك
+    if (section === 'home') {
+        const home = el('home-section');
+        if (home) { home.style.display = 'block'; home.classList.add('active'); }
+        updateHomeServices();
+        updateFeaturedProperties();
+        updateServicesList();
+        updateListings();
+        window.scrollTo(0,0);
+        return;
+    }
+
+    const target = el(section + '-section');
+    if (target) {
+        target.style.display = 'block';
+        target.classList.add('active');
+        window.scrollTo(0,0);
+    } else {
+        console.error('showSection: القسم غير موجود ->', section);
+    }
 }
 
-// Supabase Data Operations
+// ---------------------- Select Property Type (seller / buyer) ----------------------
+function getPropertyTypeArabic(type) {
+    const types = { apartment: 'شقة', house: 'بيت', land: 'أرض', villa: 'فيلا', shop: 'محل', office: 'مكتب', 'building-land': 'أرض مباني' };
+    return types[type] || type;
+}
+
+function selectPropertyType(type) {
+    currentPropertyType = type;
+    // تحديث أزرار الـ seller
+    qAll('.property-type-btn').forEach(btn => {
+        const txt = btn.textContent || '';
+        if (txt.includes(getPropertyTypeArabic(type))) {
+            btn.classList.add('border-green-500','bg-green-100');
+            btn.classList.remove('border-gray-300');
+        } else {
+            btn.classList.remove('border-green-500','bg-green-100');
+            btn.classList.add('border-gray-300');
+        }
+    });
+}
+
+function selectBuyerPropertyType(type) {
+    currentBuyerPropertyType = type;
+    qAll('.buyer-property-type-btn').forEach(btn => {
+        const txt = btn.textContent || '';
+        if (txt.includes(getPropertyTypeArabic(type))) {
+            btn.classList.add('border-blue-500','bg-blue-100');
+            btn.classList.remove('border-gray-300');
+        } else {
+            btn.classList.remove('border-blue-500','bg-blue-100');
+            btn.classList.add('border-gray-300');
+        }
+    });
+}
+
+// ---------------------- Preview images (seller form) ----------------------
+function previewImages(event) {
+    const container = el('image-preview-container');
+    if (!container) return;
+    container.innerHTML = '';
+    const files = event.target.files || [];
+    for (let i=0; i<Math.min(files.length,4); i++){
+        const file = files[i];
+        const reader = new FileReader();
+        reader.onload = function(e){
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.className = 'image-preview';
+            container.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+// ---------------------- Validation & Helpers ----------------------
+function validateWhatsApp(phoneNumber) {
+    if (!phoneNumber) return false;
+    const cleaned = phoneNumber.replace(/\s+/g,'');
+    const egyptianPhoneRegex = /^(010|011|012|015)\d{8}$/;
+    return egyptianPhoneRegex.test(cleaned);
+}
+
+function showCustomAlert(title, message) {
+    const existing = document.querySelector('.custom-alert-overlay');
+    if (existing) existing.remove();
+
+    const overlay = document.createElement('div');
+    overlay.className = 'custom-alert-overlay fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50';
+    overlay.innerHTML = `
+      <div class="bg-white rounded-2xl p-6 max-w-md mx-4 text-center shadow-lg">
+        <h3 class="text-lg font-bold mb-2">${title}</h3>
+        <p class="text-sm text-gray-700 mb-4">${message}</p>
+        <button id="custom-alert-ok" class="px-5 py-2 rounded bg-blue-600 text-white">موافق</button>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    el('custom-alert-ok').addEventListener('click', () => overlay.remove());
+}
+
+// ---------------------- Supabase load/save ----------------------
 async function loadDataFromSupabase() {
+    if (!supabaseClient) {
+        console.warn('Supabase غير مُهيأ — سيتم تحميل البيانات من localStorage إن وُجدت.');
+        loadFromLocalStorage();
+        return;
+    }
+
     try {
-        // Load seller registrations
-        const { data: sellers, error: sellersError } = await supabase
-            .from('seller_registrations')
-            .select('*');
-        
-        if (!sellersError) {
-            sellerRegistrations = sellers || [];
-        }
+        const { data: sellers, error: sellersError } = await supabaseClient.from('seller_registrations').select('*');
+        if (sellersError) console.warn('Supabase sellers error:', sellersError);
+        else sellerRegistrations = sellers || [];
 
-        // Load buyer registrations
-        const { data: buyers, error: buyersError } = await supabase
-            .from('buyer_registrations')
-            .select('*');
-        
-        if (!buyersError) {
-            buyerRegistrations = buyers || [];
-        }
+        const { data: buyers, error: buyersError } = await supabaseClient.from('buyer_registrations').select('*');
+        if (buyersError) console.warn('Supabase buyers error:', buyersError);
+        else buyerRegistrations = buyers || [];
 
-        // Load service requests
-        const { data: services, error: servicesError } = await supabase
-            .from('service_requests')
-            .select('*');
-        
-        if (!servicesError) {
-            serviceRequests = services || [];
-        }
+        const { data: featured, error: featuredError } = await supabaseClient.from('featured_properties').select('*');
+        if (!featuredError) featuredProperties = featured || [];
+        else console.warn('featured load error', featuredError);
 
-        // Load contracting clients
-        const { data: clients, error: clientsError } = await supabase
-            .from('contracting_clients')
-            .select('*');
-        
-        if (!clientsError) {
-            contractingClients = clients || [];
-        }
-
-        // Load inquiries
-        const { data: inquiryData, error: inquiryError } = await supabase
-            .from('inquiries')
-            .select('*');
-        
-        if (!inquiryError) {
-            inquiries = inquiryData || [];
-        }
-
-        console.log('Data loaded successfully from Supabase');
-    } catch (error) {
-        console.error('Error loading data from Supabase:', error);
-        // Fallback to localStorage if Supabase fails
+        console.log('Data loaded from Supabase.');
+    } catch (err) {
+        console.error('Error loading from Supabase:', err);
         loadFromLocalStorage();
     }
 }
 
 async function saveSellerRegistration(formData) {
+    // حفظ محلي أولاً
+    sellerRegistrations.push(formData);
+    saveToLocalStorage('sellerRegistrations', sellerRegistrations);
+    updateListings();
+    updateAdminPanel();
+
+    if (!supabaseClient) {
+        showCustomAlert('تم الحفظ محلياً', 'لا يوجد اتصال بـ Supabase. تم الحفظ في المتصفح.');
+        return;
+    }
+
     try {
-        const { data, error } = await supabase
-            .from('seller_registrations')
-            .insert([formData])
-            .select();
-
-        if (error) throw error;
-
-        // Save to local array
-        sellerRegistrations.push(formData);
-        
-        // Add notification
-        addNotification('عقار جديد مسجل', `تم تسجيل ${getPropertyTypeArabic(formData.propertyType)} جديد في ${getLocationArabic(formData.location)} بواسطة ${formData.name}`, 'success');
-        
-        // Update UI
-        updateAdminPanel();
-        updateListings();
-        updateLocationCounts();
-        
-        showCustomAlert('تم بنجاح', 'تم تسجيل العقار بنجاح! سيتم التواصل معك قريباً.');
-        
-        // Reset form
-        resetSellerForm();
-        
-    } catch (error) {
-        console.error('Error saving seller registration:', error);
-        // Fallback to localStorage
-        saveToLocalStorage('sellerRegistrations', sellerRegistrations);
-        showCustomAlert('تم الحفظ محلياً', 'تم حفظ البيانات محلياً بسبب مشكلة في الاتصال');
+        const { data, error } = await supabaseClient.from('seller_registrations').insert([formData]).select();
+        if (error) {
+            console.error('Supabase insert seller error:', error);
+            showCustomAlert('خطأ', 'تعذر حفظ البيانات في Supabase، تم حفظها محلياً.');
+            return;
+        }
+        showCustomAlert('نجح', 'تم تسجيل العقار في النظام.');
+    } catch (err) {
+        console.error('Error saving seller to Supabase:', err);
+        showCustomAlert('خطأ', 'حدث خطأ أثناء الحفظ.');
     }
 }
 
 async function saveBuyerRegistration(formData) {
+    buyerRegistrations.push(formData);
+    saveToLocalStorage('buyerRegistrations', buyerRegistrations);
+    updateListings();
+    updateAdminPanel();
+
+    if (!supabaseClient) {
+        showCustomAlert('تم الحفظ محلياً', 'لا يوجد اتصال بـ Supabase. تم الحفظ في المتصفح.');
+        return;
+    }
+
     try {
-        const { data, error } = await supabase
-            .from('buyer_registrations')
-            .insert([formData])
-            .select();
-
-        if (error) throw error;
-
-        // Save to local array
-        buyerRegistrations.push(formData);
-        
-        // Update UI
-        updateAdminPanel();
-        updateListings();
-        
-        showCustomAlert('تم بنجاح', 'تم تسجيل طلب البحث بنجاح! سيتم التواصل معك عند توفر عقار مناسب.');
-        
-        // Reset form
-        resetBuyerForm();
-        
-    } catch (error) {
-        console.error('Error saving buyer registration:', error);
-        // Fallback to localStorage
-        saveToLocalStorage('buyerRegistrations', buyerRegistrations);
-        showCustomAlert('تم الحفظ محلياً', 'تم حفظ البيانات محلياً بسبب مشكلة في الاتصال');
+        const { data, error } = await supabaseClient.from('buyer_registrations').insert([formData]).select();
+        if (error) {
+            console.error('Supabase insert buyer error:', error);
+            showCustomAlert('خطأ', 'تعذر حفظ الطلب في Supabase، تم حفظه محلياً.');
+            return;
+        }
+        showCustomAlert('نجح', 'تم تسجيل طلب المشتري.');
+    } catch (err) {
+        console.error('Error saving buyer to Supabase:', err);
+        showCustomAlert('خطأ', 'حدث خطأ أثناء الحفظ.');
     }
 }
 
-// Local Storage Fallback
+// ---------------------- localStorage fallback ----------------------
 function loadFromLocalStorage() {
     sellerRegistrations = JSON.parse(localStorage.getItem('sellerRegistrations')) || [];
     buyerRegistrations = JSON.parse(localStorage.getItem('buyerRegistrations')) || [];
-    serviceRequests = JSON.parse(localStorage.getItem('serviceRequests')) || [];
-    contractingClients = JSON.parse(localStorage.getItem('contractingClients')) || [];
-    inquiries = JSON.parse(localStorage.getItem('inquiries')) || [];
+    featuredProperties = JSON.parse(localStorage.getItem('featuredProperties')) || [];
 }
 
 function saveToLocalStorage(key, data) {
-    localStorage.setItem(key, JSON.stringify(data));
+    try {
+        localStorage.setItem(key, JSON.stringify(data));
+    } catch (e) { console.warn('localStorage error:', e); }
 }
 
-// Rest of your existing JavaScript functions remain the same...
-// [Include all the existing JavaScript functions from your original code here]
+// ---------------------- Forms submit handlers ----------------------
+async function submitSellerForm(e) {
+    e.preventDefault();
 
-// Example of updated functions with Supabase integration
-async function submitSellerForm(event) {
-    event.preventDefault();
-    
-    const whatsappNumber = document.getElementById('seller-whatsapp').value;
-    if (!validateWhatsApp(whatsappNumber)) {
-        showCustomAlert('خطأ', 'رقم الواتساب غير صحيح. يجب أن يبدأ بـ 010, 011, 012, أو 015 ويتكون من 11 رقم');
+    const whatsapp = el('seller-whatsapp') ? el('seller-whatsapp').value.trim() : '';
+    if (!validateWhatsApp(whatsapp)) {
+        showCustomAlert('خطأ', 'رقم واتساب غير صحيح. يجب أن يبدأ بـ 010/011/012/015 ويتكون من 11 رقم.');
         return;
     }
-    
     if (!currentPropertyType) {
-        showCustomAlert('خطأ', 'يرجى اختيار نوع العقار');
+        showCustomAlert('خطأ', 'اختر نوع العقار أولاً.');
         return;
     }
-    
-    // Collect form data
+
     const formData = {
         id: Date.now(),
         type: 'seller',
         propertyType: currentPropertyType,
-        location: document.getElementById('seller-location').value,
-        mapLocation: document.getElementById('map-location').value,
-        name: document.getElementById('seller-name').value,
-        whatsapp: whatsappNumber,
-        timestamp: new Date().toLocaleString('ar-EG'),
-        // Add other form fields as needed
+        location: el('seller-location') ? el('seller-location').value : '',
+        mapLocation: el('map-location') ? el('map-location').value : '',
+        area: el('property-area') ? el('property-area').value : '',
+        pricePerMeter: el('property-price-per-meter') ? el('property-price-per-meter').value : '',
+        totalPrice: el('property-total-price') ? el('property-total-price').value : '',
+        rooms: el('property-rooms') ? el('property-rooms').value : '',
+        description: el('property-description') ? el('property-description').value : '',
+        name: el('seller-name') ? el('seller-name').value : '',
+        whatsapp: whatsapp,
+        timestamp: new Date().toISOString()
     };
-    
-    // Add property-specific data
-    const propertyData = collectPropertyData(currentPropertyType);
-    Object.assign(formData, propertyData);
-    
-    // Save to Supabase
+
     await saveSellerRegistration(formData);
+    // reset form
+    const f = el('seller-form');
+    if (f) f.reset();
+    el('image-preview-container') && (el('image-preview-container').innerHTML = '');
+    currentPropertyType = '';
+    showSection('home');
 }
 
-async function submitBuyerForm(event) {
-    event.preventDefault();
-    
-    const whatsappNumber = document.getElementById('buyer-whatsapp').value;
-    if (!validateWhatsApp(whatsappNumber)) {
-        showCustomAlert('خطأ', 'رقم الواتساب غير صحيح. يجب أن يبدأ بـ 010, 011, 012, أو 015 ويتكون من 11 رقم');
+async function submitBuyerForm(e) {
+    e.preventDefault();
+
+    const whatsapp = el('buyer-whatsapp') ? el('buyer-whatsapp').value.trim() : '';
+    if (!validateWhatsApp(whatsapp)) {
+        showCustomAlert('خطأ', 'رقم واتساب غير صحيح. يجب أن يبدأ بـ 010/011/012/015 ويتكون من 11 رقم.');
         return;
     }
-    
     if (!currentBuyerPropertyType) {
-        showCustomAlert('خطأ', 'يرجى اختيار نوع العقار المطلوب');
+        showCustomAlert('خطأ', 'اختر نوع العقار المطلوب.');
         return;
     }
-    
-    // Collect form data
+
     const formData = {
         id: Date.now(),
         type: 'buyer',
         propertyType: currentBuyerPropertyType,
-        location: document.getElementById('buyer-location').value,
-        name: document.getElementById('buyer-name').value,
-        whatsapp: whatsappNumber,
-        timestamp: new Date().toLocaleString('ar-EG')
+        location: el('buyer-location') ? el('buyer-location').value : '',
+        minPrice: el('buyer-min-price') ? el('buyer-min-price').value : '',
+        maxPrice: el('buyer-max-price') ? el('buyer-max-price').value : '',
+        name: el('buyer-name') ? el('buyer-name').value : '',
+        whatsapp: whatsapp,
+        timestamp: new Date().toISOString()
     };
-    
-    // Save to Supabase
+
     await saveBuyerRegistration(formData);
+    const f = el('buyer-form');
+    if (f) f.reset();
+    currentBuyerPropertyType = '';
+    showSection('home');
 }
 
-// Helper functions
-function validateWhatsApp(phoneNumber) {
-    const egyptianPhoneRegex = /^(010|011|012|015)\d{8}$/;
-    return egyptianPhoneRegex.test(phoneNumber.replace(/\s+/g, ''));
+// ---------------------- Listings / Admin UI update ----------------------
+function updateListings() {
+    const saleListings = el('sale-listings');
+    const wantedListings = el('wanted-listings');
+
+    if (saleListings) {
+        if (sellerRegistrations.length === 0) {
+            saleListings.innerHTML = '<p class="text-center text-gray-500 py-4">لا توجد عقارات للبيع حالياً</p>';
+        } else {
+            saleListings.innerHTML = sellerRegistrations.map(seller => `
+                <div class="border-2 border-green-200 rounded-lg p-4 hover:shadow-lg transition-shadow">
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="font-bold text-lg text-gray-800">${getPropertyTypeArabic(seller.propertyType)} للبيع</h4>
+                        <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">للبيع</span>
+                    </div>
+                    <p class="text-gray-600 mb-2">📍 ${seller.location || 'غير محدد'}</p>
+                    <p class="text-gray-600 mb-2">📐 المساحة: ${seller.area || 'غير محدد'} متر مربع</p>
+                    ${seller.rooms ? `<p class="text-gray-600 mb-2">🏠 ${seller.rooms} غرف</p>` : ''}
+                    <div class="flex justify-between items-center mt-4">
+                        <div>
+                            <p class="text-sm text-gray-500">سعر المتر: ${seller.pricePerMeter ? Number(seller.pricePerMeter).toLocaleString() : '-'} جنيه</p>
+                            <p class="text-xl font-bold text-green-600">${seller.totalPrice ? Number(seller.totalPrice).toLocaleString() : '-'} جنيه</p>
+                        </div>
+                        <button onclick="directWhatsApp('${seller.whatsapp || ''}')" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                            📱 تواصل مباشر
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+    }
+
+    if (wantedListings) {
+        if (buyerRegistrations.length === 0) {
+            wantedListings.innerHTML = '<p class="text-center text-gray-500 py-4">لا توجد طلبات شراء حالياً</p>';
+        } else {
+            wantedListings.innerHTML = buyerRegistrations.map(buyer => `
+                <div class="border-2 border-blue-200 rounded-lg p-4 hover:shadow-lg transition-shadow">
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="font-bold text-lg text-gray-800">مطلوب ${getPropertyTypeArabic(buyer.propertyType)}</h4>
+                        <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">مطلوب</span>
+                    </div>
+                    <p class="text-gray-600 mb-2">📍 ${buyer.location || 'غير محدد'}</p>
+                    ${buyer.minPrice || buyer.maxPrice ? `<p class="text-gray-600 mb-2">💰 الميزانية: ${buyer.minPrice || 'أي'} - ${buyer.maxPrice || 'أي'} جنيه</p>` : ''}
+                    <div class="flex justify-between items-center mt-4">
+                        <button onclick="directWhatsApp('${buyer.whatsapp || ''}')" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                            📱 تواصل مباشر
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+    }
 }
 
-function showCustomAlert(title, message) {
-    const alertDiv = document.createElement('div');
-    alertDiv.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
-    alertDiv.innerHTML = `
-        <div class="bg-white rounded-2xl p-8 max-w-md mx-4 text-center">
-            <h3 class="text-xl font-bold text-gray-800 mb-4">${title}</h3>
-            <p class="text-gray-600 mb-6">${message}</p>
-            <button onclick="this.closest('.fixed').remove()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">موافق</button>
-        </div>
-    `;
-    document.body.appendChild(alertDiv);
+function updateAdminPanel() {
+    // Sellers / Buyers containers
+    const sellersContainer = el('admin-sellers');
+    const buyersContainer = el('admin-buyers');
+    if (sellersContainer) {
+        sellersContainer.innerHTML = sellerRegistrations.map(seller => `
+            <div class="bg-white p-4 rounded-lg border border-green-200 hover:shadow-md transition-shadow">
+                <div class="flex justify-between items-start mb-3">
+                    <h4 class="font-bold text-green-700">${getPropertyTypeArabic(seller.propertyType)} للبيع</h4>
+                    <span class="text-xs text-gray-500">${new Date(seller.timestamp).toLocaleString()}</span>
+                </div>
+                <div class="grid grid-cols-2 gap-2 mb-3 text-sm">
+                    <p class="text-gray-600">📍 ${seller.location || 'غير محدد'}</p>
+                    <p class="text-gray-600">👤 ${seller.name || '---'}</p>
+                    <p class="text-gray-600">📱 ${seller.whatsapp || '---'}</p>
+                    <p class="text-gray-600">📐 ${seller.area || '---'} م²</p>
+                </div>
+                <div class="mb-3 p-2 bg-green-50 rounded">
+                    <p class="text-sm text-gray-600">سعر المتر: ${seller.pricePerMeter ? Number(seller.pricePerMeter).toLocaleString() : '-' } جنيه</p>
+                    <p class="text-lg font-bold text-green-600">💰 ${seller.totalPrice ? Number(seller.totalPrice).toLocaleString() : '-'} جنيه</p>
+                </div>
+                <div class="flex gap-2 flex-wrap">
+                    <button onclick="directWhatsApp('${seller.whatsapp || ''}')" class="text-xs bg-green-500 text-white px-3 py-1 rounded">📱 واتساب</button>
+                    <button onclick="addToFeatured(${seller.id})" class="text-xs bg-yellow-500 text-white px-3 py-1 rounded">⭐ تمييز</button>
+                    <button onclick="deleteRegistration('seller', ${seller.id})" class="text-xs bg-red-500 text-white px-3 py-1 rounded">🗑️ حذف</button>
+                </div>
+            </div>
+        `).join('');
+    }
+    if (buyersContainer) {
+        buyersContainer.innerHTML = buyerRegistrations.map(buyer => `
+            <div class="bg-white p-4 rounded-lg border border-blue-200 hover:shadow-md transition-shadow">
+                <div class="flex justify-between items-start mb-2">
+                    <h4 class="font-bold text-blue-700">مطلوب ${getPropertyTypeArabic(buyer.propertyType)}</h4>
+                    <span class="text-xs text-gray-500">${new Date(buyer.timestamp).toLocaleString()}</span>
+                </div>
+                <p class="text-sm text-gray-600 mb-1">📍 ${buyer.location || 'غير محدد'}</p>
+                <p class="text-sm text-gray-600 mb-1">👤 ${buyer.name || '---'}</p>
+                <p class="text-sm text-gray-600 mb-1">📱 ${buyer.whatsapp || '---'}</p>
+                <div class="mt-3 flex gap-2 flex-wrap">
+                    <button onclick="directWhatsApp('${buyer.whatsapp || ''}')" class="text-xs bg-blue-500 text-white px-3 py-1 rounded">📱 واتساب</button>
+                    <button onclick="deleteRegistration('buyer', ${buyer.id})" class="text-xs bg-red-500 text-white px-3 py-1 rounded">🗑️ حذف</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // Stats
+    el('sellers-count') && (el('sellers-count').textContent = sellerRegistrations.length);
+    el('buyers-count') && (el('buyers-count').textContent = buyerRegistrations.length);
+    el('total-properties') && (el('total-properties').textContent = sellerRegistrations.length);
+    el('total-requests') && (el('total-requests').textContent = buyerRegistrations.length);
+    el('total-clients') && (el('total-clients').textContent = sellerRegistrations.length + buyerRegistrations.length);
+    el('total-featured') && (el('total-featured').textContent = featuredProperties.length || 0);
 }
 
-// [Include all other existing functions...]
+// ---------------------- Admin actions ----------------------
+function adminClickCount() {
+    adminClickCounter++;
+    if (adminClickCounter >= 12) {
+        adminClickCounter = 0;
+        showSection('admin-login');
+    }
+}
 
-// Initialize when page loads
-showSection('home');
+function adminLogin(e) {
+    e.preventDefault();
+    const username = el('admin-username') ? el('admin-username').value : '';
+    const password = el('admin-password') ? el('admin-password').value : '';
+
+    const admin = adminUsers.find(a => a.username === username && a.password === password);
+    if (admin) {
+        currentAdmin = admin;
+        el('admin-welcome') && (el('admin-welcome').textContent = `مرحباً، ${admin.fullName}`);
+        showSection('admin-dashboard');
+        showAdminTab('registrations');
+        updateAdminPanel();
+        el('admin-login-form') && el('admin-login-form').reset();
+    } else {
+        showCustomAlert('فشل الدخول', 'اسم المستخدم أو كلمة المرور غير صحيحة');
+    }
+}
+
+function adminLogout() {
+    currentAdmin = null;
+    showSectio
