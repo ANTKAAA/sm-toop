@@ -1,16 +1,76 @@
-/*
-  ملف style.css
-  يُستخدم هنا لإضافة أي تنسيقات إضافية أو تجاوزات لـ Tailwind CSS.
-*/
-
-/* تخصيص زر تحديد نوع العقار عند اختياره */
-.property-type-btn {
-    transition: all 0.3s ease;
-    border: 2px solid #d1d5db; /* gray-300 */
+body {
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* تخصيص زر تحديد نوع العقار للمشتري عند اختياره */
-.buyer-property-type-btn {
-    transition: all 0.3s ease;
-    border: 2px solid #d1d5db; /* gray-300 */
+/* إعلان متحرك */
+.moving-announcement {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: linear-gradient(45deg, #4f46e5, #7c3aed, #ec4899);
+    color: white;
+    padding: 8px 0;
+    z-index: 1000;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+.announcement-text {
+    display: inline-block;
+    white-space: nowrap;
+    animation: scroll-right 20s linear infinite;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+@keyframes scroll-right {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100vw);
+    }
+}
+
+/* تعديل المحتوى ليبدأ تحت الإعلان */
+body {
+    padding-top: 40px;
+}
+.property-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.property-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+.form-section {
+    display: none;
+}
+.form-section.active {
+    display: block;
+}
+.price-warning {
+    background: linear-gradient(45deg, #fef3c7, #fde68a);
+    border-right: 4px solid #f59e0b;
+}
+.map-container {
+    height: 300px;
+    background: linear-gradient(135deg, #e0f2fe, #b3e5fc);
+    border: 2px dashed #0288d1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+}
+.admin-tab {
+    display: none;
+}
+.admin-tab.active {
+    display: block;
+}
+.admin-tab-btn.active {
+    background-color: #7c3aed !important;
+    color: white !important;
 }
