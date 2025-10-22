@@ -1,0 +1,16 @@
+/*
+  ملف style.css
+  يُستخدم هنا لإضافة أي تنسيقات إضافية أو تجاوزات لـ Tailwind CSS.
+*/
+
+/* تخصيص زر تحديد نوع العقار عند اختياره */
+.property-type-btn {
+    transition: all 0.3s ease;
+    border: 2px solid #d1d5db; /* gray-300 */
+}
+
+/* تخصيص زر تحديد نوع العقار للمشتري عند اختياره */
+.buyer-property-type-btn {
+    transition: all 0.3s ease;
+    border: 2px solid #d1d5db; /* gray-300 */
+}
