@@ -7,29 +7,27 @@
     <link href="./style.css" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* CSS مخصص للتحكم في الإعلان المتحرك وتمرير المحتوى */
-        body { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding-top: 40px; }
-        .moving-announcement {
-            position: fixed; top: 0; left: 0; width: 100%;
-            background: linear-gradient(45deg, #4f46e5, #7c3aed, #ec4899);
-            color: white; padding: 8px 0; z-index: 1000; overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        }
+        /* CSS مخصص لضمان عمل الواجهة واللوحة الإدارية */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding-top: 40px; box-sizing: border-box; }
+        .moving-announcement { position: fixed; top: 0; left: 0; width: 100%; background: linear-gradient(45deg, #4f46e5, #7c3aed, #ec4899); color: white; padding: 8px 0; z-index: 1000; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
         .announcement-text { display: inline-block; white-space: nowrap; animation: scroll-right 20s linear infinite; font-weight: bold; font-size: 14px; }
         @keyframes scroll-right { 0% { transform: translateX(-100%); } 100% { transform: translateX(100vw); } }
         /* إظهار/إخفاء الأقسام */
         .form-section { display: none; }
         .form-section.active { display: block; }
-        /* لتسهيل التحديد في JS: */
         .property-type-btn.active { border-color: #10b981 !important; background-color: #ecfdf5 !important; }
         .buyer-property-type-btn.active { border-color: #3b82f6 !important; background-color: #eff6ff !important; }
-        .map-area-btn.active { background-color: #10b981 !important; }
-        
         .property-card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
         .property-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
+        .price-warning { background: linear-gradient(45deg, #fef3c7, #fde68a); border-right: 4px solid #f59e0b; }
+        .admin-tab { display: none; }
+        .admin-tab.active { display: block; }
+        .admin-tab-btn.active { background-color: #7c3aed !important; color: white !important; }
+        .map-container { height: 200px; background: #e0f2fe; border: 2px dashed #0288d1; display: flex; align-items: center; justify-content: center; border-radius: 12px; }
     </style>
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-full">
+    
     <div class="moving-announcement">
         <div class="announcement-text">
             🌟 صلِّ على محمد ﷺ 🌟 تم إدارة التسويق للموقع من TopMarketing 🌟 للتواصل: 01091020887 🌟 المستقبل للتسويق العقاري - منصتك الموثوقة 🌟
@@ -39,10 +37,10 @@
     <header class="bg-white shadow-lg">
         <div class="container mx-auto px-4 py-6">
             <div class="flex justify-between items-center">
-                <h1 class="text-4xl font-bold text-blue-800 cursor-pointer" onclick="showSection('home')">🏠 المستقبل للتسويق العقاري</h1>
+                <h1 class="text-4xl font-bold text-blue-800 cursor-pointer" onclick="adminClickCount()">🏠 المستقبل للتسويق العقاري</h1>
                 <nav class="flex gap-4">
                     <button onclick="showSection('seller')" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">بيع عقار</button>
-                    <button onclick="showSection('buyer')" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">شراء عقار</button>
+                    <button onclick="showSection('buyer')" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">شاري عقار</button>
                     <button onclick="showSection('listings')" class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">العقارات المتاحة</button>
                 </nav>
             </div>
@@ -81,11 +79,33 @@
 
         <div class="max-w-6xl mx-auto" id="contracting-services-section">
             <div class="text-center mb-8">
-                <h2 class="text-3xl font-bold text-orange-700 mb-4">🏗️ خدمات التشطيب والمقاولات</h2>
+                <h2 class="text-3xl font-bold text-orange-700 mb-4">خدمات التشطيب والمقاولات</h2>
                 <p class="text-xl text-gray-600">خدمات متكاملة للتصميم والتشطيب والمقاولات</p>
             </div>
             
             <div id="home-services-grid" class="grid md:grid-cols-3 gap-6">
+                <div class="property-card bg-white rounded-2xl shadow-xl p-6 border-t-4 border-orange-500">
+                    <div class="text-center mb-4">
+                        <div class="text-4xl mb-3">🔑</div>
+                        <h4 class="text-xl font-bold text-orange-700 mb-2">مقاولات استلام على المفتاح</h4>
+                        <p class="text-gray-600 text-sm mb-3">مقاولات كاملة من البداية حتى الاستلام النهائي جاهز للسكن</p>
+                        <div class="text-sm text-gray-600 mb-4">للاستعلام عن الأسعار تواصل معنا</div>
+                    </div>
+                    <button onclick="showServiceModal('مقاولات استلام على المفتاح')" class="w-full bg-orange-600 text-white py-3 rounded-xl text-lg font-semibold hover:bg-orange-700 transition-colors">
+                        طلب الخدمة
+                    </button>
+                </div>
+                <div class="property-card bg-white rounded-2xl shadow-xl p-6 border-t-4 border-orange-500">
+                    <div class="text-center mb-4">
+                        <div class="text-4xl mb-3">🏪</div>
+                        <h4 class="text-xl font-bold text-orange-700 mb-2">تصميم المحلات التجارية</h4>
+                        <p class="text-gray-600 text-sm mb-3">تصميم وتجهيز المحلات التجارية لجذب العملاء وزيادة المبيعات</p>
+                        <div class="text-sm text-gray-600 mb-4">للاستعلام عن الأسعار تواصل معنا</div>
+                    </div>
+                    <button onclick="showServiceModal('تصميم المحلات التجارية')" class="w-full bg-orange-600 text-white py-3 rounded-xl text-lg font-semibold hover:bg-orange-700 transition-colors">
+                        طلب الخدمة
+                    </button>
+                </div>
                 <div class="property-card bg-white rounded-2xl shadow-xl p-6 border-t-4 border-orange-500">
                     <div class="text-center mb-4">
                         <div class="text-4xl mb-3">🏠</div>
@@ -93,29 +113,7 @@
                         <p class="text-gray-600 text-sm mb-3">خدمات تصميم داخلي وخارجي للشقق السكنية بأحدث الطرق والتقنيات</p>
                         <div class="text-sm text-gray-600 mb-4">للاستعلام عن الأسعار تواصل معنا</div>
                     </div>
-                    <button onclick="requestService('تصميم شقق')" class="w-full bg-orange-600 text-white py-3 rounded-xl text-lg font-semibold hover:bg-orange-700 transition-colors">
-                        طلب الخدمة
-                    </button>
-                </div>
-                 <div class="property-card bg-white rounded-2xl shadow-xl p-6 border-t-4 border-orange-500">
-                    <div class="text-center mb-4">
-                        <div class="text-4xl mb-3">🔑</div>
-                        <h4 class="text-xl font-bold text-orange-700 mb-2">مقاولات استلام على المفتاح</h4>
-                        <p class="text-gray-600 text-sm mb-3">مقاولات كاملة من البداية حتى الاستلام النهائي جاهز للسكن</p>
-                        <div class="text-sm text-gray-600 mb-4">للاستعلام عن الأسعار تواصل معنا</div>
-                    </div>
-                    <button onclick="requestService('مقاولات على المفتاح')" class="w-full bg-orange-600 text-white py-3 rounded-xl text-lg font-semibold hover:bg-orange-700 transition-colors">
-                        طلب الخدمة
-                    </button>
-                </div>
-                 <div class="property-card bg-white rounded-2xl shadow-xl p-6 border-t-4 border-orange-500">
-                    <div class="text-center mb-4">
-                        <div class="text-4xl mb-3">🎨</div>
-                        <h4 class="text-xl font-bold text-orange-700 mb-2">خدمات التشطيب الداخلي</h4>
-                        <p class="text-gray-600 text-sm mb-3">تشطيبات عالية الجودة (كهرباء، سباكة، دهانات، أرضيات)</p>
-                        <div class="text-sm text-gray-600 mb-4">للاستعلام عن الأسعار تواصل معنا</div>
-                    </div>
-                    <button onclick="requestService('تشطيب داخلي')" class="w-full bg-orange-600 text-white py-3 rounded-xl text-lg font-semibold hover:bg-orange-700 transition-colors">
+                    <button onclick="showServiceModal('تصميم الشقق السكنية')" class="w-full bg-orange-600 text-white py-3 rounded-xl text-lg font-semibold hover:bg-orange-700 transition-colors">
                         طلب الخدمة
                     </button>
                 </div>
@@ -123,47 +121,421 @@
         </div>
     </main>
 
+    <div id="service-request-modal" class="fixed inset-0 bg-black bg-opacity-75 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl p-6 max-w-md w-full">
+            <h2 class="text-3xl font-bold text-orange-700 mb-6 text-center" id="service-modal-title"></h2>
+            
+            <form id="service-form-modal" onsubmit="submitServiceRequest(event)">
+                <input type="hidden" id="service-name" name="service_name" required>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">اسم العميل</label>
+                    <input type="text" id="service-client-name" name="name" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none" required>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">رقم الواتساب</label>
+                    <input type="tel" id="service-whatsapp" name="whatsapp" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none" placeholder="01xxxxxxxxx" required>
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">تفاصيل المشروع</label>
+                    <textarea id="service-details" name="details" class="w-full p-4 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none h-32" placeholder="اكتب تفاصيل المشروع..." required></textarea>
+                </div>
+                
+                 <div class="flex gap-4 justify-center">
+                    <button type="submit" class="w-full bg-orange-600 text-white py-3 rounded-xl text-lg font-semibold hover:bg-orange-700 transition-colors">
+                        إرسال الطلب
+                    </button>
+                    <button type="button" onclick="closeServiceModal()" class="w-full bg-gray-500 text-white py-3 rounded-xl text-lg font-semibold hover:bg-gray-600 transition-colors">
+                        إلغاء
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
     <div id="seller-section" class="form-section container mx-auto px-4 py-8">
         <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl p-8">
             <h2 class="text-3xl font-bold text-green-700 mb-8 text-center">نموذج بيع العقار</h2>
             
-            <form id="seller-form">
+            <form id="seller-form" onsubmit="submitSellerForm(event)">
                 <div class="mb-8">
-                    <label class="block text-lg font-semibold text-gray-700 mb-4">نوع العقار</label>
+                    <label class="block text-lg font-semibold text-gray-700 mb-4">1. نوع العقار</label>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <button type="button" data-type="apartment" class="property-type-btn p-4 border-2 border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors">
-                            <div class="text-2xl mb-2">🏠</div><div class="font-semibold">شقة</div>
-                        </button>
-                        <button type="button" data-type="house" class="property-type-btn p-4 border-2 border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors">
-                            <div class="text-2xl mb-2">🏘️</div><div class="font-semibold">بيت</div>
-                        </button>
-                        <button type="button" data-type="land" class="property-type-btn p-4 border-2 border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors">
-                            <div class="text-2xl mb-2">🌾</div><div class="font-semibold">أرض</div>
-                        </button>
-                        <button type="button" data-type="shop" class="property-type-btn p-4 border-2 border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors">
-                            <div class="text-2xl mb-2">🏪</div><div class="font-semibold">محل</div>
-                        </button>
+                        <button type="button" data-type="apartment" class="property-type-btn p-4 border-2 border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors">🏠 شقة</button>
+                        <button type="button" data-type="house" class="property-type-btn p-4 border-2 border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors">🏘️ بيت</button>
+                        <button type="button" data-type="land" class="property-type-btn p-4 border-2 border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors">🌾 أرض</button>
+                        <button type="button" data-type="shop" class="property-type-btn p-4 border-2 border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors">🏪 محل</button>
+                        <button type="button" data-type="office" class="property-type-btn p-4 border-2 border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors">🏢 مكتب تجاري</button>
+                        <button type="button" data-type="villa" class="property-type-btn p-4 border-2 border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors">🏰 فيلا</button>
+                        <button type="button" data-type="building-land" class="property-type-btn p-4 border-2 border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors">🏗️ أرض مباني</button>
                         <input type="hidden" id="seller-property-type" name="property_type" required>
                     </div>
                 </div>
 
                 <div class="mb-8">
-                    <label class="block text-lg font-semibold text-gray-700 mb-4">الموقع</label>
-                    <select id="seller-location" name="location" class="w-full p-4 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none" required>
-                        <option value="">اختر الموقع</option>
-                        <option value="damanhour">دمنهور</option>
-                        <option value="kom-hamada">كوم حمادة</option>
-                        <option value="itay">إيتاي البارود</option>
-                        <option value="delengat">الدلنجات</option>
-                    </select>
+                    <label class="block text-lg font-semibold text-gray-700 mb-4">2. الموقع الجغرافي</label>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <select id="seller-location" name="location" class="w-full p-4 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none" required>
+                            <option value="">اختر المنطقة الرئيسية</option>
+                            <option value="damanhour">دمنهور</option>
+                            <option value="kom-hamada">كوم حمادة</option>
+                            <option value="itay">إيتاي البارود</option>
+                            <option value="delengat">الدلنجات</option>
+                        </select>
+                        <input type="text" id="seller-map-location" name="map_location" class="w-full p-4 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none" placeholder="تحديد الموقع بالتفصيل (شارع الجمهورية، سيدي خلف...)">
+                    </div>
+                    
+                    <div class="mt-4 p-4 bg-gray-100 rounded-lg border border-gray-300">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">تحديد الموقع بدقة على الخريطة</label>
+                        <div id="map-buttons" class="flex gap-2 flex-wrap mb-4">
+                            <button type="button" onclick="showMapSelector('damanhour')" class="map-area-btn text-sm bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors">خريطة دمنهور</button>
+                            <button type="button" onclick="showMapSelector('kom-hamada')" class="map-area-btn text-sm bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors">خريطة كوم حمادة</button>
+                            <button type="button" onclick="showMapSelector('itay')" class="map-area-btn text-sm bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors">خريطة إيتاي البارود</button>
+                            <button type="button" onclick="showMapSelector('delengat')" class="map-area-btn text-sm bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors">خريطة الدلنجات</button>
+                        </div>
+                        <div id="map-selector-container" class="map-container h-64">
+                            <p class="text-gray-500 text-center">اختر منطقة لعرض الخرائط التفاعلية وتحديد الموقع.</p>
+                        </div>
+                    </div>
+                    
                 </div>
                 
-                <div class="mb-8 bg-gray-50 p-6 rounded-lg">
-                    <h3 class="text-lg font-semibold text-gray-700 mb-4">تفاصيل العقار</h3>
+                <div class="mb-8 bg-gray-50 p-6 rounded-lg border border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-4">3. تفاصيل العقار: <span id="dynamic-property-title" class="text-indigo-600">يرجى اختيار النوع</span></h3>
+                    
+                    <div id="property-details-container">
+                        <p class="text-gray-500 text-center py-4">ستظهر حقول مخصصة هنا بعد اختيار نوع العقار.</p>
+                    </div>
+                </div>
+
+                <div class="mb-8 bg-blue-50 p-6 rounded-lg border-2 border-blue-200">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-4">4. تفاصيل السعر</h3>
                     <div class="grid md:grid-cols-3 gap-4">
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">مساحة العقار (متر مربع)</label>
-                            <input type="number" id="seller-area" name="area" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none" required>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">السعر الكلي المطلوب (جنيه)</label>
+                            <input type="number" id="seller-total-price" name="price" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none" required>
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold text-gray-7
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">سعر المتر أو القيراط (تقديري)</label>
+                            <input type="number" id="seller-meters-price" name="meters_price" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none" oninput="checkPriceValidation()">
+                        </div>
+                        <div class="flex items-center">
+                            <label class="flex items-center mt-6 space-x-2 space-x-reverse">
+                                <input type="checkbox" id="seller-negotiable" name="negotiable" class="w-5 h-5 text-green-600 rounded">
+                                <span class="font-semibold text-gray-700">قابل للتفاوض</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div id="price-validation-message" class="mt-4 p-3 bg-orange-100 text-orange-800 rounded hidden">
+                        </div>
+                </div>
+
+                <div class="mb-8 bg-yellow-50 p-6 rounded-lg border-2 border-yellow-200">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-4">5. الامتيازات والملاحظات</h3>
+                    
+                    <div class="grid md:grid-cols-3 gap-4 mb-4" id="utilities-section-fields">
+                        <div class="col-span-3 md:col-span-1">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">العدادات المتاحة</label>
+                            <div class="flex flex-wrap gap-4">
+                                <label class="flex items-center space-x-2 space-x-reverse"><input type="checkbox" name="utilities" value="electricity" class="w-4 h-4 text-green-600"><span>كهرباء</span></label>
+                                <label class="flex items-center space-x-2 space-x-reverse"><input type="checkbox" name="utilities" value="gas" class="w-4 h-4 text-green-600"><span>غاز</span></label>
+                                <label class="flex items-center space-x-2 space-x-reverse"><input type="checkbox" name="utilities" value="water" class="w-4 h-4 text-green-600"><span>مياه</span></label>
+                            </div>
+                        </div>
+                        <div class="col-span-3 md:col-span-2">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">امتيازات إضافية</label>
+                            <div class="grid grid-cols-2 gap-3">
+                                <label class="flex items-center space-x-2 space-x-reverse"><input type="checkbox" name="extras" value="elevator" class="w-4 h-4 text-indigo-600"><span>أسانسير</span></label>
+                                <label class="flex items-center space-x-2 space-x-reverse"><input type="checkbox" name="extras" value="security" class="w-4 h-4 text-indigo-600"><span>أمن وحراسة</span></label>
+                                <label class="flex items-center space-x-2 space-x-reverse"><input type="checkbox" name="extras" value="corner" class="w-4 h-4 text-indigo-600"><span>ناصية</span></label>
+                                <label class="flex items-center space-x-2 space-x-reverse"><input type="checkbox" name="extras" value="hotel_entrance" class="w-4 h-4 text-indigo-600"><span>مدخل فندقي</span></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">وصف العقار والملاحظات الإضافية</label>
+                        <textarea id="seller-notes" name="notes" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none h-20" placeholder="اكتب ملاحظات تفصيلية عن حالة العقار وموقعه بالتحديد..."></textarea>
+                    </div>
+                </div>
+                
+                <div class="mb-8 bg-purple-50 p-6 rounded-lg border-2 border-purple-200">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-4">6. صور العقار (مطلوب 4 صور على الأقل)</h3>
+                    <input type="file" id="property-images" name="images" accept="image/*" multiple class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none" onchange="handleImageUpload(this.files)">
+                    <div id="image-preview" class="mt-4 grid grid-cols-4 gap-4"></div>
+                    <p id="image-count-msg" class="text-sm text-red-600 mt-2 hidden">⚠️ يرجى اختيار ما بين 4 إلى 10 صور.</p>
+                </div>
+
+
+                <div class="mb-8 bg-green-50 p-6 rounded-lg border-2 border-green-200">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-4">7. معلومات التواصل</h3>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">الاسم</label>
+                            <input type="text" id="seller-name" name="name" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">رقم الواتساب</label>
+                            <input type="tel" id="seller-whatsapp" name="whatsapp" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none" placeholder="01xxxxxxxxx" required>
+                            <p class="text-sm text-red-600 mt-1">⚠️ يجب أن يكون الرقم متاح على الواتساب للتواصل السريع</p>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-green-600 text-white py-4 rounded-xl text-lg font-semibold hover:bg-green-700 transition-colors">
+                    تسجيل العقار للبيع
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="buyer-section" class="form-section container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl p-8">
+            <h2 class="text-3xl font-bold text-blue-700 mb-8 text-center">نموذج البحث عن عقار</h2>
+            
+            <form id="buyer-form" onsubmit="submitBuyerForm(event)">
+                <div class="mb-8">
+                    <label class="block text-lg font-semibold text-gray-700 mb-4">1. نوع العقار المطلوب</label>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <button type="button" data-type="apartment" class="buyer-property-type-btn p-4 border-2 border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors">🏠 شقة</button>
+                        <button type="button" data-type="house" class="buyer-property-type-btn p-4 border-2 border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors">🏘️ بيت</button>
+                        <button type="button" data-type="land" class="buyer-property-type-btn p-4 border-2 border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors">🌾 أرض</button>
+                        <button type="button" data-type="shop" class="buyer-property-type-btn p-4 border-2 border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors">🏪 محل</button>
+                        <button type="button" data-type="office" class="buyer-property-type-btn p-4 border-2 border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors">🏢 مكتب</button>
+                        <button type="button" data-type="villa" class="buyer-property-type-btn p-4 border-2 border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors">🏰 فيلا</button>
+                        <input type="hidden" id="buyer-property-type" name="property_type" required>
+                    </div>
+                </div>
+
+                <div class="mb-8 bg-blue-50 p-6 rounded-lg border-2 border-blue-200">
+                    <label class="block text-lg font-semibold text-gray-700 mb-4">2. المنطقة المطلوبة والميزانية</label>
+                    
+                    <div class="mb-4">
+                        <select id="buyer-location" name="location" class="w-full p-4 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none" onchange="updateBuyerPriceInfo()" required>
+                            <option value="">اختر المنطقة</option>
+                            <option value="damanhour">دمنهور</option>
+                            <option value="kom-hamada">كوم حمادة</option>
+                            <option value="itay">إيتاي البارود</option>
+                            <option value="delengat">الدلنجات</option>
+                        </select>
+                    </div>
+                    
+                    <div id="buyer-price-info" class="p-3 bg-white rounded-lg text-sm text-gray-700 mb-4">
+                        <p>💡 الأسعار تتحدد حسب المساحة والموقع والمباني (حديثة أم قديمة) ومستوى التشطيب</p>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-4">
+                         <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">الحد الأدنى للميزانية (جنيه)</label>
+                            <input type="number" id="buyer-min-budget" name="min_budget" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none" placeholder="الحد الأدنى 900,000" min="900000" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">الحد الأقصى للميزانية (جنيه)</label>
+                            <input type="number" id="buyer-max-budget" name="max_budget" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none" placeholder="أدخل المبلغ الأقصى" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-8 bg-gray-50 p-6 rounded-lg border border-gray-200">
+                    <label class="block text-lg font-semibold text-gray-700 mb-4">3. المواصفات المطلوبة</label>
+                    <div class="grid md:grid-cols-4 gap-4 mb-4">
+                         <label class="flex items-center space-x-2 space-x-reverse"><input type="checkbox" name="buyer_extras" value="elevator" class="w-4 h-4 text-indigo-600"><span>أسانسير</span></label>
+                         <label class="flex items-center space-x-2 space-x-reverse"><input type="checkbox" name="buyer_extras" value="security" class="w-4 h-4 text-indigo-600"><span>أمن وحراسة</span></label>
+                         <label class="flex items-center space-x-2 space-x-reverse"><input type="checkbox" name="buyer_extras" value="garden" class="w-4 h-4 text-indigo-600"><span>حديقة</span></label>
+                         <label class="flex items-center space-x-2 space-x-reverse"><input type="checkbox" name="buyer_extras" value="busy_street" class="w-4 h-4 text-indigo-600"><span>شارع حيوي</span></label>
+                         <label class="flex items-center space-x-2 space-x-reverse"><input type="checkbox" name="buyer_extras" value="commercial_area" class="w-4 h-4 text-indigo-600"><span>منطقة تجارية</span></label>
+                         <label class="flex items-center space-x-2 space-x-reverse"><input type="checkbox" name="buyer_extras" value="public_place" class="w-4 h-4 text-indigo-600"><span>قرب مكان عمومي</span></label>
+                    </div>
+                     <div class="mt-4">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">وصف تفصيلي للعقار المطلوب</label>
+                        <textarea id="buyer-requirements" name="requirements" class="w-full p-4 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none h-24" placeholder="مثال: شقة متشطبة بالكامل في دور متوسط بمباني حديثة، أو بيت أرضي ودورين..."></textarea>
+                    </div>
+                </div>
+
+                <div class="mb-8 bg-green-50 p-6 rounded-lg border-2 border-green-200">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-4">4. معلومات التواصل</h3>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">الاسم</label>
+                            <input type="text" id="buyer-name" name="name" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">رقم الواتساب</label>
+                            <input type="tel" id="buyer-whatsapp" name="whatsapp" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none" placeholder="01xxxxxxxxx" required>
+                            <p class="text-sm text-red-600 mt-1">⚠️ يجب أن يكون الرقم متاح على الواتساب للتواصل السريع</p>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-xl text-lg font-semibold hover:bg-blue-700 transition-colors">
+                    تسجيل طلب البحث
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <div id="listings-section" class="form-section container mx-auto px-4 py-8">
+        <div class="max-w-6xl mx-auto">
+            <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">العقارات المتاحة حالياً</h2>
+            
+            <div id="property-listings-container" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+                 <div class="border-2 border-purple-200 rounded-xl p-6 bg-white shadow-md text-center">
+                    <p class="text-gray-500">جاري تحميل العقارات المتاحة للبيع...</p>
+                    <p class="text-sm text-gray-500 mt-3">سجل الآن ليتم عرض عقارك هنا، أو تواصل معنا للاستعلام عن الطلبات.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="admin-login-section" class="form-section container mx-auto px-4 py-8">
+        <div class="max-w-md mx-auto bg-white rounded-2xl shadow-xl p-8">
+            <div class="text-center mb-8">
+                <div class="text-6xl mb-4">🔐</div>
+                <h2 class="text-3xl font-bold text-purple-700 mb-2">دخول الإدارة</h2>
+                <p class="text-gray-600">يرجى إدخال بيانات الدخول للوصول إلى لوحة التحكم</p>
+            </div>
+            
+            <form id="admin-login-form" onsubmit="adminLogin(event)">
+                <div class="mb-6">
+                    <label class="block text-lg font-semibold text-gray-700 mb-2">اسم المستخدم</label>
+                    <input type="text" id="admin-username" class="w-full p-4 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none" required>
+                </div>
+                
+                <div class="mb-8">
+                    <label class="block text-lg font-semibold text-gray-700 mb-2">كلمة المرور</label>
+                    <input type="password" id="admin-password-input" class="w-full p-4 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none" required>
+                </div>
+                
+                <button type="submit" class="w-full bg-purple-600 text-white py-4 rounded-xl text-lg font-semibold hover:bg-purple-700 transition-colors">
+                    دخول لوحة التحكم
+                </button>
+            </form>
+            
+            <div class="text-center mt-6">
+                <button onclick="showSection('home')" class="text-purple-600 hover:text-purple-800 transition-colors">العودة للرئيسية</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="admin-dashboard-section" class="form-section admin-dashboard-section">
+        <div class="bg-purple-700 text-white shadow-lg admin-header">
+            <div class="container mx-auto px-4 py-4">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center">
+                        <h1 class="text-2xl font-bold">🏠 لوحة تحكم المستقبل للتسويق العقاري</h1>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span id="admin-welcome" class="text-purple-200">مرحباً، المدير الرئيسي</span>
+                        <button onclick="adminLogout()" class="bg-purple-800 hover:bg-purple-900 px-4 py-2 rounded-lg transition-colors">تسجيل الخروج</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container mx-auto px-4 py-8">
+            <div class="bg-white rounded-2xl shadow-xl p-4 mb-8">
+                <div class="flex flex-wrap gap-3 justify-start">
+                    <button onclick="showAdminTab('registrations')" class="admin-tab-btn active bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors text-sm">🏠 العقارات</button>
+                    <button onclick="showAdminTab('search')" class="admin-tab-btn bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors text-sm">🔍 البحث المتقدم</button>
+                    <button onclick="showAdminTab('matching')" class="admin-tab-btn bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors text-sm">🤝 نظام التوفيق</button>
+                    <button onclick="showAdminTab('commission')" class="admin-tab-btn bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors text-sm">💰 حساب العمولة</button>
+                    <button onclick="showAdminTab('inquiries')" class="admin-tab-btn bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors text-sm">📞 الاستعلامات</button>
+                    <button onclick="showAdminTab('contracting-clients')" class="admin-tab-btn bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors text-sm">👷 عملاء المقاولات</button>
+                    <button onclick="showAdminTab('services')" class="admin-tab-btn bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors text-sm">⚙️ إدارة الخدمات</button>
+                    <button onclick="showAdminTab('admins')" class="admin-tab-btn bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors text-sm">👥 إدارة المديرين</button>
+                    <button onclick="showAdminTab('statistics')" class="admin-tab-btn bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors text-sm">📊 الإحصائيات</button>
+                </div>
+            </div>
+
+            <div id="admin-tabs-content">
+                <div id="admin-registrations-tab" class="admin-tab active">
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div class="bg-white rounded-2xl shadow-xl p-6">
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="text-xl font-bold text-green-700">🏠 العقارات للبيع</h3>
+                                <span id="sellers-count" class="bg-green-100 text-green-800 px-3 py-1 rounded-full font-semibold">0</span>
+                            </div>
+                            <div id="admin-sellers" class="space-y-4 max-h-96 overflow-y-auto">
+                                <p class="text-gray-500 text-center py-8">لا توجد تسجيلات بائعين.</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-2xl shadow-xl p-6">
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="text-xl font-bold text-blue-700">🔍 طلبات الشراء</h3>
+                                <span id="buyers-count" class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-semibold">0</span>
+                            </div>
+                            <div id="admin-buyers" class="space-y-4 max-h-96 overflow-y-auto">
+                                <p class="text-gray-500 text-center py-8">لا توجد طلبات مشترين.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="admin-search-tab" class="admin-tab"><div class="bg-white rounded-2xl shadow-xl p-8"><h3 class="text-2xl font-bold text-blue-700 mb-6">🔍 البحث المتقدم بالمناطق</h3><p class="text-gray-500 text-center py-8">سيتم بناء وظيفة البحث المتقدم هنا.</p></div></div>
+                 <div id="admin-matching-tab" class="admin-tab"><div class="bg-white rounded-2xl shadow-xl p-8"><h3 class="text-2xl font-bold text-yellow-700 mb-6">🤝 نظام التوفيق بين البائعين والمشترين</h3><p class="text-gray-500 text-center py-8">سيتم بناء نظام التوفيق هنا.</p></div></div>
+                 <div id="admin-commission-tab" class="admin-tab"><div class="bg-white rounded-2xl shadow-xl p-8"><h3 class="text-2xl font-bold text-green-700 mb-6">💰 حساب العمولة العقارية</h3><p class="text-gray-500 text-center py-8">سيتم بناء حاسبة العمولة هنا.</p></div></div>
+                 <div id="admin-inquiries-tab" class="admin-tab"><div class="bg-white rounded-2xl shadow-xl p-8"><h3 class="text-2xl font-bold text-red-700 mb-6">📞 إدارة الاستعلامات والمتابعة</h3><p class="text-gray-500 text-center py-8">سيتم بناء إدارة الاستعلامات هنا.</p></div></div>
+                 <div id="admin-contracting-clients-tab" class="admin-tab"><div class="bg-white rounded-2xl shadow-xl p-8"><h3 class="text-2xl font-bold text-orange-700 mb-6">👷 عملاء المقاولات</h3><p class="text-gray-500 text-center py-8">سيتم بناء إدارة عملاء المقاولات هنا.</p></div></div>
+                 <div id="admin-services-tab" class="admin-tab"><div class="bg-white rounded-2xl shadow-xl p-8"><h3 class="text-2xl font-bold text-purple-700 mb-6">⚙️ إدارة الخدمات</h3><p class="text-gray-500 text-center py-8">سيتم بناء إدارة الخدمات هنا.</p></div></div>
+                 <div id="admin-admins-tab" class="admin-tab"><div class="bg-white rounded-2xl shadow-xl p-8"><h3 class="text-2xl font-bold text-indigo-700 mb-6">👥 إدارة المديرين</h3><div id="admins-list"><p class="text-gray-500 text-center py-8">سيتم بناء إدارة المديرين هنا.</p></div></div></div>
+                 <div id="admin-statistics-tab" class="admin-tab"><div class="grid md:grid-cols-3 gap-6 mb-8"><div class="bg-white rounded-2xl shadow-xl p-6 text-center"><div class="text-4xl mb-2">🏠</div><h3 class="text-2xl font-bold text-green-600" id="total-properties">0</h3><p class="text-gray-600">إجمالي العقارات</p></div><div class="bg-white rounded-2xl shadow-xl p-6 text-center"><div class="text-4xl mb-2">🔍</div><h3 class="text-2xl font-bold text-blue-600" id="total-requests">0</h3><p class="text-gray-600">طلبات الشراء</p></div><div class="bg-white rounded-2xl shadow-xl p-6 text-center"><div class="text-4xl mb-2">👥</div><h3 class="text-2xl font-bold text-purple-600" id="total-admins">1</h3><p class="text-gray-600">عدد المديرين</p></div></div><div class="bg-white rounded-2xl shadow-xl p-8"><h3 class="text-2xl font-bold text-gray-800 mb-6">إحصائيات مفصلة</h3><p class="text-gray-500 text-center py-8">سيتم بناء الإحصائيات هنا.</p></div></div>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="custom-alert" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-8 max-w-md mx-4 text-center">
+            <h3 id="alert-title" class="text-xl font-bold text-gray-800 mb-4"></h3>
+            <p id="alert-message" class="text-gray-600 mb-6"></p>
+            <button onclick="closeCustomAlert()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">موافق</button>
+        </div>
+    </div>
+    
+    <div id="admin-login-section" class="form-section container mx-auto px-4 py-8">
+        <div class="max-w-md mx-auto bg-white rounded-2xl shadow-xl p-8">
+            <div class="text-center mb-8">
+                <div class="text-6xl mb-4">🔐</div>
+                <h2 class="text-3xl font-bold text-purple-700 mb-2">دخول الإدارة</h2>
+                <p class="text-gray-600">يرجى إدخال بيانات الدخول للوصول إلى لوحة التحكم</p>
+            </div>
+            
+            <form id="admin-login-form" onsubmit="adminLogin(event)">
+                <div class="mb-6">
+                    <label class="block text-lg font-semibold text-gray-700 mb-2">اسم المستخدم</label>
+                    <input type="text" id="admin-username" class="w-full p-4 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none" required>
+                </div>
+                
+                <div class="mb-8">
+                    <label class="block text-lg font-semibold text-gray-700 mb-2">كلمة المرور</label>
+                    <input type="password" id="admin-password-input" class="w-full p-4 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none" required>
+                </div>
+                
+                <button type="submit" class="w-full bg-purple-600 text-white py-4 rounded-xl text-lg font-semibold hover:bg-purple-700 transition-colors">
+                    دخول لوحة التحكم
+                </button>
+            </form>
+            
+            <div class="text-center mt-6">
+                <button onclick="showSection('home')" class="text-purple-600 hover:text-purple-800 transition-colors">العودة للرئيسية</button>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="details-modal" class="fixed inset-0 bg-black bg-opacity-75 hidden items-center justify-center z-50 p-4">
+        </div>
+
+    <div id="map-selector-modal" class="fixed inset-0 bg-black bg-opacity-75 hidden items-center justify-center z-50 p-4">
+        </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./script.js"></script>
+</body>
+</html>
