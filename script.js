@@ -450,4 +450,189 @@ function adminLogin(e) {
 
 function adminLogout() {
     currentAdmin = null;
-    showSectio
+    showSection('home');
+    showCustomAlert('تم', 'تسجيل الخروج بنجاح');
+}
+
+function showAdminTab(tabName) {
+    qAll('.admin-tab').forEach(t => t.classList.remove('active'));
+    qAll('.admin-tab-btn').forEach(b => b.classList.remove('active', 'bg-purple-600', 'text-white'));
+    const tab = el(`admin-${tabName}-tab`);
+    if (tab) tab.classList.add('active');
+    // style clicked button (if existed in event)
+}
+
+// ---------------------- Featured / delete ----------------------
+function addToFeatured(propertyId) {
+    const property = sellerRegistrations.find(s => s.id === propertyId);
+    if (!property) { showCustomAlert('خطأ', 'العقار غير موجود'); return; }
+    if (featuredProperties.find(f => f.propertyId === propertyId)) { showCustomAlert('معلومة', 'هذا العقار مميز بالفعل'); return; }
+
+    const fp = { id: Date.now(), propertyId, property, createdAt: new Date().toISOString() };
+    featuredProperties.push(fp);
+    saveToLocalStorage('featuredProperties', featuredProperties);
+    updateFeaturedProperties();
+    updateFeaturedPropertiesList && updateFeaturedPropertiesList();
+    updateAdminPanel();
+}
+
+function removeFeaturedProperty(id) {
+    featuredProperties = featuredProperties.filter(fp => fp.id !== id);
+    saveToLocalStorage('featuredProperties', featuredProperties);
+    updateFeaturedProperties();
+}
+
+function deleteRegistration(type, id) {
+    if (!confirm('هل أنت متأكد من الحذف؟')) return;
+    if (type === 'seller') {
+        sellerRegistrations = sellerRegistrations.filter(s => s.id !== id);
+        featuredProperties = featuredProperties.filter(f => f.propertyId !== id);
+        saveToLocalStorage('sellerRegistrations', sellerRegistrations);
+        saveToLocalStorage('featuredProperties', featuredProperties);
+    } else {
+        buyerRegistrations = buyerRegistrations.filter(b => b.id !== id);
+        saveToLocalStorage('buyerRegistrations', buyerRegistrations);
+    }
+    updateAdminPanel();
+    updateListings();
+    updateFeaturedProperties();
+}
+
+// ---------------------- Featured UI ----------------------
+function updateFeaturedProperties() {
+    const container = el('featured-properties');
+    if (!container) return;
+    if (!featuredProperties || featuredProperties.length === 0) {
+        container.innerHTML = '<p class="text-center text-gray-500 col-span-3 py-8">لا توجد عقارات مميزة حالياً</p>';
+        return;
+    }
+    container.innerHTML = featuredProperties.map(fp => `
+        <div class="property-card bg-white rounded-2xl shadow-xl p-6 border-t-4 border-yellow-500 relative">
+            <div class="featured-badge">⭐ مميز</div>
+            <div class="text-center mb-4">
+                <div class="text-4xl mb-3">${getPropertyIcon(fp.property.propertyType)}</div>
+                <h4 class="text-xl font-bold text-yellow-700 mb-2">${getPropertyTypeArabic(fp.property.propertyType)} للبيع</h4>
+                <p class="text-gray-600 text-sm mb-3">${fp.property.description || ''}</p>
+                <p class="text-gray-600 mb-2">📍 ${fp.property.location || ''}</p>
+                <p class="text-gray-600 mb-2">📐 ${fp.property.area || ''} م²</p>
+                <p class="text-lg font-bold text-yellow-600">${fp.property.totalPrice ? Number(fp.property.totalPrice).toLocaleString() : '-'} جنيه</p>
+            </div>
+            <button onclick="directWhatsApp('${fp.property.whatsapp || ''}')" class="w-full bg-yellow-600 text-white py-3 rounded-xl text-lg font-semibold hover:bg-yellow-700 transition-colors">
+                📱 تواصل مباشر
+            </button>
+        </div>
+    `).join('');
+}
+
+function updateFeaturedPropertiesList() {
+    const container = el('featured-properties-list');
+    if (!container) return;
+    container.innerHTML = featuredProperties.map(fp => `
+        <div class="bg-yellow-50 p-4 rounded-lg border-2 border-yellow-300">
+            <div class="flex justify-between items-start mb-3">
+                <h4 class="font-bold text-yellow-700">${getPropertyTypeArabic(fp.property.propertyType)} - ${fp.property.location || ''}</h4>
+                <div class="flex gap-2"><span class="bg-yellow-200 text-yellow-800 px-2 py-1 rounded text-xs">الترتيب</span></div>
+            </div>
+            <p class="text-gray-700 mb-2">${fp.property.description || ''}</p>
+            <p class="text-sm text-gray-500">💰 ${fp.property.totalPrice ? Number(fp.property.totalPrice).toLocaleString() : '-'} جنيه</p>
+        </div>
+    `).join('');
+}
+
+// ---------------------- Misc ----------------------
+function getPropertyIcon(type) {
+    const icons = { apartment: '🏠', house: '🏘️', land: '🌾', villa: '🏰', shop: '🏪', office: '🏢' };
+    return icons[type] || '🏠';
+}
+
+function directWhatsApp(whatsapp) {
+    if (!whatsapp) {
+        showCustomAlert('تنبيه', 'لا يوجد رقم واتساب للمعلن');
+        return;
+    }
+    const cleaned = whatsapp.replace(/^\+?2?/,''); // قد تحوي بادئة
+    const message = encodeURIComponent('مرحباً، أنا مهتم بالعقار المنشور في موقع المستقبل للتسويق العقاري');
+    window.open(`https://wa.me/2${cleaned}?text=${message}`, '_blank');
+}
+
+// ---------------------- Services UI ----------------------
+function updateHomeServices() {
+    const homeServicesGrid = el('home-services-grid');
+    if (!homeServicesGrid) return;
+    const active = contractingServices.filter(s => s.active);
+    homeServicesGrid.innerHTML = active.map(s => `
+        <div class="property-card bg-white rounded-2xl shadow-xl p-6 border-t-4 border-orange-500">
+            <div class="text-center mb-4">
+                <div class="text-4xl mb-3">${s.icon}</div>
+                <h4 class="text-xl font-bold text-orange-700 mb-2">${s.title}</h4>
+                <p class="text-gray-600 text-sm mb-3">${s.description}</p>
+                <div class="text-sm text-gray-600 mb-4">${s.price}</div>
+            </div>
+            <button onclick="requestService(${s.id})" class="w-full bg-orange-600 text-white py-3 rounded-xl text-lg font-semibold hover:bg-orange-700 transition-colors">طلب الخدمة</button>
+        </div>
+    `).join('');
+}
+
+function updateServicesList() {
+    const servicesList = el('services-list');
+    if (!servicesList) return;
+    const active = contractingServices.filter(s => s.active);
+    servicesList.innerHTML = active.map(s => `
+        <div class="property-card bg-white rounded-2xl shadow-xl p-6 border-t-4 border-orange-500">
+            <div class="text-center mb-4">
+                <div class="text-4xl mb-3">${s.icon}</div>
+                <h4 class="text-xl font-bold text-orange-700 mb-2">${s.title}</h4>
+                <p class="text-gray-600 text-sm mb-3">${s.description}</p>
+                <div class="text-sm text-gray-600 mb-4">${s.price}</div>
+            </div>
+            <button onclick="requestService(${s.id})" class="w-full bg-orange-600 text-white py-3 rounded-xl text-lg font-semibold hover:bg-orange-700 transition-colors">طلب الخدمة</button>
+        </div>
+    `).join('');
+}
+
+function requestService(id) {
+    const s = contractingServices.find(x => x.id === id);
+    if (!s) return;
+    const message = encodeURIComponent(`مرحباً، أريد معلومات عن الخدمة: ${s.title}`);
+    window.open(`https://wa.me/201091020887?text=${message}`, '_blank');
+}
+
+// ---------------------- Init ----------------------
+document.addEventListener('DOMContentLoaded', async () => {
+    // Attach image preview if input exists
+    const imageInput = el('property-images');
+    if (imageInput) imageInput.addEventListener('change', previewImages);
+
+    // Attach submit handlers if forms exist
+    const sellerForm = el('seller-form');
+    if (sellerForm) sellerForm.addEventListener('submit', submitSellerForm);
+    const buyerForm = el('buyer-form');
+    if (buyerForm) buyerForm.addEventListener('submit', submitBuyerForm);
+    const adminForm = el('admin-login-form');
+    if (adminForm) adminForm.addEventListener('submit', adminLogin);
+
+    // Load from Supabase (or fallback)
+    await loadDataFromSupabase();
+    loadFromLocalStorage();
+    updateListings();
+    updateAdminPanel();
+    updateHomeServices();
+    updateServicesList();
+    updateFeaturedProperties();
+
+    // sample seeding if empty (for demo only)
+    if (sellerRegistrations.length === 0) {
+        sellerRegistrations.push({
+            id: 1, type: 'seller', propertyType: 'apartment', location: 'kom-hamada',
+            area: '100', pricePerMeter: '14000', totalPrice: '1400000', rooms: '3',
+            description: 'شقة حديثة - تشطيب سوبر لوكس', name: 'أحمد', whatsapp: '01091020887', timestamp: new Date().toISOString()
+        });
+        buyerRegistrations.push({
+            id: 1, type: 'buyer', propertyType: 'house', location: 'damanhour',
+            minPrice: '1000000', maxPrice: '2000000', name: 'محمد', whatsapp: '01091020887', timestamp: new Date().toISOString()
+        });
+        updateListings(); updateAdminPanel();
+    }
+
+    showSection('home');
+});
